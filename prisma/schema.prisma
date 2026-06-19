@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  passwordHash  String?
+  phone         String?   @unique
+  name          String?
+  avatar        String?
+  emailVerified Boolean   @default(false) // 邮箱注册用户需验证后才发积分；手机用户默认 true
+  membership    String    @default("starter")
+  credits       Int       @default(0)
+  trialEndsAt   DateTime?
+  registerIp    String?
+  consentAt     DateTime?
+  lastDailyGrantAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  generations   Generation[]
+  creditLogs    CreditTransaction[]
+  memberships   MembershipRecord[]
+}
+
+// 登录尝试记录 —— 用于暴力破解防护（OWASP 认证规范）
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  success   Boolean  @default(false)
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
+}
+
+model Generation {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String   @default("video") // video | image_bg
+  prompt      String
+  imageKey    String?
+  requestId   String?
+  videoUrl    String?
+  resultImageUrl String?
+  status      String   @default("pending")
+  moderationStatus String @default("pending") // pending | approved | rejected
+  creditsUsed Int      @default(10)
+  mode        String   @default("standard")
+  durationSec Int      @default(5)
+  engineUsed  String?
+  fallbackIndex Int    @default(0)
+  inputImages String?  // 容灾重提用：JSON 压缩图数组，终态清空
+  modelId     String   @default("Wan-AI/Wan2.2-I2V-A14B")
+  errorMsg    String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// 积分流水 — 每一笔积分变动都有记录，可追溯
+model CreditTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int      // 正数=充值/发放，负数=消耗
+  type      String   // grant | consume | refund
+  reason    String   // trial_signup | video_gen | ai_polish | manual_grant | refund_failed
+  relatedId String?  // 关联的 Generation id 等
+  createdAt DateTime @default(now())
+
+  // 退款幂等兜底：同一关联记录 + 同类型只能有一条（防止重复退款）
+  @@unique([relatedId, type])
+  @@index([userId, createdAt])
+}
+
+// 会员记录 — 独立追踪会员状态变化
+model MembershipRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan      String   // trial | pro | max | ultra
+  startAt   DateTime @default(now())
+  endAt     DateTime
+  status    String   @default("active") // active | expired | cancelled
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// 短信验证码 —— 手机号登录/注册（一次性、5 分钟有效）
+model VerificationCode {
+  id         String    @id @default(cuid())
+  phone      String
+  code       String
+  ip         String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([phone, createdAt])
+  @@index([ip, createdAt])
+}
+
+// 邮箱验证码 —— 注册后验证邮箱所有权（一次性、10 分钟有效）
+model EmailVerificationCode {
+  id         String    @id @default(cuid())
+  email      String
+  code       String
+  ip         String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
+}

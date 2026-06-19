@@ -1,0 +1,202 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════
+   设计 Token（唯一来源）
+   参考：Linear/Runway 暗色奢华体系
+   ═══════════════════════════════════════ */
+@theme inline {
+  --color-noir-50: #F2EDE4;
+  --color-noir-100: #E0D8CC;
+  --color-noir-200: #C5BBA8;
+  --color-noir-300: #9E9582;
+  --color-noir-400: #7A7264;
+  --color-noir-500: #5C5548;
+  --color-noir-600: #45403A;
+  --color-noir-700: #35322C;
+  --color-noir-800: #262420;
+  --color-noir-900: #1A1714;
+  --color-noir-950: #0F0E0C;
+
+  --color-gold-50: #FDF7EF;
+  --color-gold-100: #F9E8D0;
+  --color-gold-200: #F2CEA0;
+  --color-gold-300: #E8B06A;
+  --color-gold-400: #D4943F;
+  --color-gold-500: #B87A2E;
+  --color-gold-600: #996023;
+  --color-gold-700: #7A4A1D;
+  --color-gold-800: #5C3818;
+  --color-gold-900: #3D2610;
+
+  --color-sage-400: #7FB285;
+  --color-sage-500: #5A9A62;
+  --color-terracotta-300: #E8A597;
+  --color-terracotta-400: #D4806E;
+  --color-terracotta-500: #C0624E;
+
+  --font-display: "Cormorant Garamond", "Noto Serif SC", serif;
+  --font-body: "DM Sans", "PingFang SC", "Noto Sans SC", sans-serif;
+
+  --letter-spacing-luxe: 0.15em;
+  --letter-spacing-wide-luxe: 0.25em;
+
+  --animate-fade-in: fade-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slide-up: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-glow: glow 3s ease-in-out infinite;
+  --animate-slow-zoom: slow-zoom 20s ease-in-out infinite alternate;
+  --animate-pulse-arrow: pulse-arrow 2s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
+}
+
+/* ═══ 动画（easeOutExpo 曲线 = 奢华感） ═══ */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(212, 148, 63, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(212, 148, 63, 0.25); }
+}
+@keyframes slow-zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
+}
+@keyframes pulse-arrow {
+  0%, 100% { opacity: 0.4; transform: translateX(0); }
+  50% { opacity: 1; transform: translateX(3px); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes shine-sweep {
+  0% { left: -75%; }
+  100% { left: 125%; }
+}
+
+/* ═══ 全局基础 ═══ */
+body {
+  background-color: var(--color-noir-950);
+  color: var(--color-noir-50);
+  font-family: var(--font-body);
+}
+
+::selection { background-color: rgba(212, 148, 63, 0.25); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(212, 148, 63, 0.15); border-radius: 3px; }
+
+*:focus-visible {
+  outline: 2px solid rgba(212, 148, 63, 0.4);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════
+   高级视觉效果（调研所得）
+   ═══════════════════════════════════════ */
+
+/* 噪点纹理叠加层（SVG feTurbulence） */
+.noise-overlay {
+  position: relative;
+}
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Aurora 背景光晕（Linear/Aceternity 风格） */
+.bg-aurora {
+  position: relative;
+}
+.bg-aurora::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 60%, rgba(212, 148, 63, 0.07), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 75% 30%, rgba(127, 178, 133, 0.04), transparent 50%),
+    radial-gradient(ellipse 40% 60% at 50% 80%, rgba(212, 148, 63, 0.03), transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 渐变金色文字 */
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--color-gold-400), var(--color-gold-200), var(--color-gold-400));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 按钮 hover 光扫效果 */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+  transform: skewX(-25deg);
+  transition: none;
+}
+.btn-shine:hover::before {
+  left: 125%;
+  transition: left 0.7s ease;
+}
+
+/* 卡片 hover 金色光晕 */
+.card-glow {
+  transition: box-shadow 0.5s ease, transform 0.5s ease, border-color 0.5s ease;
+}
+.card-glow:hover {
+  box-shadow: 0 0 40px rgba(212, 148, 63, 0.12);
+  border-color: rgba(212, 148, 63, 0.3);
+  transform: translateY(-2px);
+}
+
+/* 图片网格背景（低透明度展示图衬底） */
+.bg-showcase-grid {
+  position: relative;
+}
+.bg-showcase-grid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, var(--color-noir-950), transparent 15%, transparent 85%, var(--color-noir-950));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 固定视口（Studio 用） */
+.viewport-lock {
+  height: 100vh; /* fallback */
+  height: 100dvh; /* 现代浏览器动态视口 */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
