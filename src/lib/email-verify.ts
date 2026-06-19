@@ -29,7 +29,7 @@ async function sendVerificationEmail(email: string, code: string): Promise<void>
       console.log(`[EMAIL:dev] Sending verification code to ${email}: ${code} (RESEND_API_KEY not configured, dev placeholder only)`)
       return
     }
-    throw new EmailVerifyError('Email service is not configured. Please contact support')
+    throw new EmailVerifyError('Email service is not configured. Please email support@dflow.top')
   }
 
   const { Resend } = await import('resend')

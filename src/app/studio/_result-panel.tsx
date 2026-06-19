@@ -125,7 +125,7 @@ export function ResultPanel({ result, beforeImage, syncBusy, genPhase, genElapse
         </div>
         <p className="font-display text-base text-noir-200 tracking-wide mb-2">Generation timed out</p>
         <p className="font-body text-sm text-noir-400 mb-1">The server may be busy, please try again later</p>
-        <p className="font-body text-xs text-noir-500">Credits will be refunded automatically. If not received, please contact support</p>
+        <p className="font-body text-xs text-noir-500">Credits will be refunded automatically. If not received, please email support@dflow.top</p>
       </div>
     )
   }

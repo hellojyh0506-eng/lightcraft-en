@@ -185,7 +185,7 @@ export async function POST(req: Request) {
       )
     }
     return NextResponse.json({
-      error: refunded ? 'Generation failed, credits have been refunded. Please try again later' : 'Generation failed. If credits were not refunded, please contact support',
+      error: refunded ? 'Generation failed, credits have been refunded. Please try again later' : 'Generation failed. If credits were not refunded, please email support@dflow.top',
     }, { status: 500 })
   }
 }

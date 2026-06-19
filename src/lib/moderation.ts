@@ -15,10 +15,7 @@ function getCreemBaseUrl(): string {
 export async function moderateText(prompt: string): Promise<ModerationResult> {
   const apiKey = process.env.CREEM_API_KEY
   if (!apiKey) {
-    // Creem 未配置时放行（本地开发），生产环境必须配置
-    if (process.env.NODE_ENV === 'production') {
-      return { approved: false, reason: 'Content moderation not configured' }
-    }
+    console.warn('[moderation] CREEM_API_KEY not set — skipping moderation')
     return { approved: true }
   }
 

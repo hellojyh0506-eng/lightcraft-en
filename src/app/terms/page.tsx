@@ -53,7 +53,7 @@ export default function TermsPage() {
             <h2 className="font-display text-lg text-noir-100 mb-3">Chapter 5: Payment Methods</h2>
             <p className="mb-2">5.1 Users may purchase membership plans directly through the Platform's pricing page. Payments are processed by our payment partner, Creem (Armitage Labs OÜ), acting as Merchant of Record.</p>
             <p className="mb-2">5.2 Membership services are billed as one-time monthly purchases. There is no automatic recurring billing.</p>
-            <p className="mb-2">5.3 If the Platform's services are unavailable for more than 72 consecutive hours due to our own issues, users may contact support to request compensation in membership time.</p>
+            <p className="mb-2">5.3 If the Platform's services are unavailable for more than 72 consecutive hours due to our own issues, users may email <a href="mailto:support@dflow.top" className="text-gold-400 underline">support@dflow.top</a> to request compensation in membership time.</p>
             <p>5.4 Except for the circumstances described above and as otherwise required by law, paid membership fees are non-refundable.</p>
           </section>
           <section>

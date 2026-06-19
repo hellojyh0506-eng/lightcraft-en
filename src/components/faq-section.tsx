@@ -4,7 +4,7 @@ const faqs = [
   { q: 'Are my images and data secure?', a: 'Yes. Your images are only used for video generation and will never be used for training or shared with third parties. See our Privacy Policy for details.' },
   { q: 'Does it work on mobile?', a: 'Yes. LightCraft is a web app — just open it in your phone\'s browser. No app download needed.' },
   { q: 'What happens when I run out of credits?', a: 'You can upgrade your membership plan for more credits. Free users can also earn credits through daily check-ins.' },
-  { q: 'Do you offer refunds?', a: 'Credits for failed generations are automatically refunded. For membership subscription refunds, please contact support.' },
+  { q: 'Do you offer refunds?', a: 'Credits for failed generations are automatically refunded. For membership subscription refunds, please email support@dflow.top.' },
   { q: 'Do I need a credit card to sign up?', a: 'No. Signing up is free, and no credit card is required. You can upgrade your plan anytime through our payment options.' },
 ]
 
