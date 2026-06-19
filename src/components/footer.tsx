@@ -50,9 +50,9 @@ export function Footer() {
                 </li>
               ))}
               <li>
-                <span className="font-body text-sm text-noir-400">
-                  Contact us: support@lightcraft.com
-                </span>
+                <a href="mailto:support@dflow.top" className="font-body text-sm text-noir-400 hover:text-gold-400 transition-colors">
+                  support@dflow.top
+                </a>
               </li>
             </ul>
           </div>

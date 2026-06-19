@@ -24,7 +24,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-display text-lg text-noir-100 mb-3">Chapter 1: Who We Are</h2>
             <p className="mb-2">1.1 The Platform is operated by an independent developer, providing users with AI image-to-video generation services.</p>
-            <p>1.2 If you have any questions about this policy or wish to exercise your personal information rights, please contact us through the "Contact Support" feature within the Platform.</p>
+            <p>1.2 If you have any questions about this policy or wish to exercise your personal information rights, please contact us at <a href="mailto:support@dflow.top" className="text-gold-400 underline">support@dflow.top</a>.</p>
           </section>
           <section>
             <h2 className="font-display text-lg text-noir-100 mb-3">Chapter 2: Information We Collect</h2>
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
               <p className="text-noir-400 text-xs">Data transmitted: user-uploaded images and prompts · Purpose: AI video content generation · Data location: within the People's Republic of China · Alibaba Cloud holds Level 3 security certification</p>
             </div>
             <p className="mb-2">4.2 Other than the above, we will not share personal information with third parties unless we have your explicit consent or are required by law.</p>
-            <p>4.3 We do not transfer personal information outside of the country. All data storage and processing is completed within China.</p>
+            <p>4.3 Your data may be processed in different regions depending on the cloud infrastructure providers used. We take reasonable steps to ensure adequate protection of your data regardless of location.</p>
           </section>
           <section>
             <h2 className="font-display text-lg text-noir-100 mb-3">Chapter 5: Information Storage and Protection</h2>
@@ -76,7 +76,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-display text-lg text-noir-100 mb-3">Chapter 7: Informed Consent Mechanism</h2>
             <p className="mb-2">7.1 Consent is given by checking the agreement to this Privacy Policy during registration. Registration cannot be completed without checking the box.</p>
-            <p className="mb-2">7.2 You may withdraw all consent by deleting your account, or contact support to withdraw partial consent (which may affect certain features).</p>
+            <p className="mb-2">7.2 You may withdraw all consent by deleting your account, or email <a href="mailto:support@dflow.top" className="text-gold-400 underline">support@dflow.top</a> to withdraw partial consent (which may affect certain features).</p>
             <p>7.3 In the event of material changes to this policy (expanded collection scope, changes to third-party sharing, etc.), we will seek your consent again.</p>
           </section>
           <section>
@@ -97,7 +97,7 @@ export default function PrivacyPage() {
           </section>
           <section>
             <h2 className="font-display text-lg text-noir-100 mb-3">Chapter 11: Contact Us</h2>
-            <p>If you have any questions or wish to exercise any of your rights, please contact us through the "Contact Support" feature within the Platform. We will respond within 15 business days.</p>
+            <p>If you have any questions or wish to exercise any of your rights, please email us at <a href="mailto:support@dflow.top" className="text-gold-400 underline">support@dflow.top</a>. We will respond within 15 business days.</p>
           </section>
         </div>
       </main>
