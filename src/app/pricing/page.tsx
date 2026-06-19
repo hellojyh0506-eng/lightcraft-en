@@ -128,7 +128,7 @@ export default function PricingPage() {
           {[
             { title: 'Cancel anytime', desc: 'No contracts, switch or cancel freely' },
             { title: 'Instant credits', desc: 'Credits available immediately after upgrade' },
-            { title: 'Email support', desc: 'Reach us anytime at support@lightcraft.ai' },
+            { title: 'Email support', desc: 'Reach us anytime at support@dflow.top' },
           ].map((item, i) => (
             <div key={i} className="text-center">
               <h4 className="font-display text-base text-noir-100 mb-1.5">{item.title}</h4>
