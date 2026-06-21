@@ -38,7 +38,17 @@ export async function GET(req: NextRequest) {
   }
 
   // SSRF protection: restrict upstream domains
-  const ALLOWED_DOMAINS = ['dashscope.aliyuncs.com', 'cn-beijing.oss.aliyuncs.com', 'cdn.siliconflow.cn', 's3.siliconflow.cn', 'sf-maas-uat-prod.oss-cn-shanghai.aliyuncs.com']
+  const ALLOWED_DOMAINS = [
+    'dashscope.aliyuncs.com', 'cn-beijing.oss.aliyuncs.com',
+    'cdn.siliconflow.cn', 's3.siliconflow.cn',
+    'sf-maas-uat-prod.oss-cn-shanghai.aliyuncs.com',
+    // SiliconFlow image CDN variants
+    'image.siliconflow.cn', 'siliconflow.cn',
+    // Aliyun OSS buckets (DashScope / 通义万相 results)
+    'oss-cn-shanghai.aliyuncs.com', 'oss-cn-beijing.aliyuncs.com',
+    'oss-cn-hangzhou.aliyuncs.com', 'oss-cn-shenzhen.aliyuncs.com',
+    'oss-us-west-1.aliyuncs.com',
+  ]
   try {
     const urlHost = new URL(gen.resultImageUrl).hostname
     if (!ALLOWED_DOMAINS.some((d) => urlHost === d || urlHost.endsWith('.' + d))) {
@@ -57,7 +67,7 @@ export async function GET(req: NextRequest) {
   return new Response(upstream.body, {
     headers: {
       'Content-Type': upstream.headers.get('content-type') || 'image/png',
-      'Content-Disposition': `attachment; filename="lumiere_${id}.png"`,
+      'Content-Disposition': `attachment; filename="lightcraft_${id}.png"`,
       'Cache-Control': 'private, no-store',
     },
   })

@@ -2,12 +2,26 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { createCheckout } from '@/lib/payment'
 import { PLANS } from '@/lib/plans'
+import { createRateLimiter } from '@/lib/rate-limit'
+import { bodyTooLarge } from '@/lib/security'
+
+const limiter = createRateLimiter({ windowMs: 60_000, maxHits: 5 })
 
 export async function POST(req: Request) {
+  // 0. Body size check — reject oversized payloads before processing
+  if (bodyTooLarge(req, 8_192)) {
+    return NextResponse.json({ error: 'Request body too large' }, { status: 413 })
+  }
+
   // 1. Auth — user must be logged in to purchase
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Please sign in first' }, { status: 401 })
+  }
+
+  // 1.5 Rate limiting — prevent checkout session spam
+  if (limiter.check(session.user.id)) {
+    return NextResponse.json({ error: 'Too many requests, please try again later' }, { status: 429 })
   }
 
   // 2. Parse plan selection

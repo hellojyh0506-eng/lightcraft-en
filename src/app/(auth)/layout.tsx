@@ -193,13 +193,6 @@ export default function AuthLayout({
           {children}
         </div>
       </div>
-
-      {/* Bento image slow zoom animation */}
-      <style>{`
-        .auth-slow-zoom {
-          /* Animation disabled — zoom causes pixel jitter */
-        }
-      `}</style>
     </div>
   )
 }

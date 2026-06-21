@@ -1,13 +1,14 @@
 'use client'
 
-import { Video, ImageIcon, Paintbrush } from 'lucide-react'
+import { Video, ImageIcon, Paintbrush, Link } from 'lucide-react'
 
-export type ToolId = 'video' | 'edit' | 'generate'
+export type ToolId = 'video' | 'edit' | 'generate' | 'link'
 
 const TOOLS: { id: ToolId; icon: typeof Video; label: string; desc: string }[] = [
   { id: 'generate', icon: ImageIcon, label: 'Generate', desc: 'Text to image' },
   { id: 'edit', icon: Paintbrush, label: 'Edit', desc: 'Background · Cutout' },
   { id: 'video', icon: Video, label: 'Video', desc: 'Image to video' },
+  { id: 'link', icon: Link, label: 'Link', desc: 'URL to video' },
 ]
 
 interface Props { active: ToolId; onChange: (id: ToolId) => void }

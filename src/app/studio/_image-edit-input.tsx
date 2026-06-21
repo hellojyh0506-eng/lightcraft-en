@@ -7,12 +7,12 @@ import { useDraft } from '@/hooks/use-draft'
 
 type EditOp = 'background' | 'cutout' | 'watermark' | 'enhance' | 'custom'
 
-const OPS: { id: EditOp; icon: typeof Scissors; label: string; needsPrompt: boolean; cost: number }[] = [
-  { id: 'background', icon: ImageIcon, label: 'Background', needsPrompt: true, cost: 3 },
-  { id: 'cutout', icon: Scissors, label: 'Cutout', needsPrompt: false, cost: 3 },
-  { id: 'watermark', icon: Droplets, label: 'Watermark', needsPrompt: false, cost: 3 },
-  { id: 'enhance', icon: Sparkles, label: 'Enhance', needsPrompt: false, cost: 3 },
-  { id: 'custom', icon: Wand2, label: 'Custom', needsPrompt: true, cost: 3 },
+const OPS: { id: EditOp; icon: typeof Scissors; label: string; action: string; needsPrompt: boolean; cost: number }[] = [
+  { id: 'background', icon: ImageIcon, label: 'Bg Swap', action: 'Swap Background', needsPrompt: true, cost: 3 },
+  { id: 'cutout', icon: Scissors, label: 'Remove Bg', action: 'Remove Background', needsPrompt: false, cost: 3 },
+  { id: 'watermark', icon: Droplets, label: 'Erase Mark', action: 'Erase Watermark', needsPrompt: false, cost: 3 },
+  { id: 'enhance', icon: Sparkles, label: 'Enhance', action: 'Enhance Image', needsPrompt: false, cost: 3 },
+  { id: 'custom', icon: Wand2, label: 'Custom', action: 'Apply Edit', needsPrompt: true, cost: 3 },
 ]
 
 const EXAMPLES = [
@@ -130,8 +130,12 @@ export function ImageEditInput({ onGenerate, busy, showToast }: Props) {
     }
 
     setBatchProcessing(false)
-    const failCount = images.filter((i) => i.status === 'error').length
-    showToast(failCount > 0 ? `Done, ${failCount} failed` : 'Batch processing complete!', failCount > 0 ? 'error' : 'success')
+    // 使用 setImages 回调获取最新状态来计算完成/失败数（避免闭包快照读取过期 images）
+    setImages((prev) => {
+      const failCount = prev.filter((i) => i.status === 'error').length
+      showToast(failCount > 0 ? `Done, ${failCount} failed` : 'Batch processing complete!', failCount > 0 ? 'error' : 'success')
+      return prev
+    })
   }
 
   const doneCount = images.filter((i) => i.status === 'done').length
@@ -262,8 +266,8 @@ export function ImageEditInput({ onGenerate, busy, showToast }: Props) {
         disabled={busy || batchProcessing || images.length === 0}
         className="btn-shine w-full py-2.5 rounded-xl bg-gold-400 text-noir-950 font-body text-sm font-semibold hover:bg-gold-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
         {batchProcessing ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing {doneCount}/{images.length}</> :
-          isBatch ? `Batch ${currentOp.label} (${images.length} images · ${totalCost} credits)` :
-          `Start ${currentOp.label} · ${currentOp.cost} credits`}
+          isBatch ? `Batch ${currentOp.action} (${images.length} images · ${totalCost} credits)` :
+          `${currentOp.action} · ${currentOp.cost} credits`}
       </button>
 
       {/* After batch complete: download all */}

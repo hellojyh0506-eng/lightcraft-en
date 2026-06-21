@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 
 export type TaskStatus = 'pending' | 'queued' | 'generating' | 'completed' | 'failed'
 export type TaskType = 'video' | 'image_edit' | 'image_gen'
@@ -11,6 +11,7 @@ export interface Task {
   status: TaskStatus
   prompt: string
   resultUrl?: string
+  altUrls?: string[]
   createdAt: number
   elapsed?: number
 }
@@ -29,9 +30,10 @@ function saveTasks(tasks: Task[]) {
 }
 
 export function useTaskFeed() {
-  const [tasks, setTasks] = useState<Task[]>([])
-
-  useEffect(() => { setTasks(loadTasks()) }, [])
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    if (typeof window === 'undefined') return []
+    return loadTasks()
+  })
 
   const add = useCallback((task: Omit<Task, 'createdAt'>) => {
     setTasks((prev) => {

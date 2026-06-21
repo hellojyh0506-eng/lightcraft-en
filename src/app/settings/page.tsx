@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Coins, Gem, ArrowLeft, LogOut, CreditCard, Clock } from 'lucide-react'
 import { MEMBERSHIP_LABELS, type PlanId } from '@/lib/plans'
 import { DeleteAccountButton } from '@/components/delete-account-button'
+import { BrandKitEditor } from './_brand-kit-editor'
 
 export const metadata = { title: 'Settings · LightCraft' }
 
@@ -50,6 +51,8 @@ export default async function SettingsPage() {
           </div>
           <Link href="/pricing" className="mt-4 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gold-400/10 border border-gold-400/30 text-gold-400 text-sm hover:bg-gold-400/20"><CreditCard className="w-4 h-4" />Upgrade Plan</Link>
         </div>
+
+        <BrandKitEditor />
 
         <div>
           <div className="flex items-center gap-2 mb-3"><Clock className="w-4 h-4 text-noir-300" /><h3 className="text-sm text-noir-200">Credit History</h3></div>

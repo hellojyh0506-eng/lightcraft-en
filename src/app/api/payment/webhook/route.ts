@@ -50,7 +50,11 @@ export async function POST(req: Request) {
     }
 
     // Event ID for idempotency — prevents double-granting on webhook retry
-    const eventId = (event.id || event.event_id || `evt_${Date.now()}`) as string
+    const eventId = (event.id || event.event_id) as string | undefined
+    if (!eventId) {
+      console.error('Webhook missing event ID — cannot guarantee idempotency, rejecting:', JSON.stringify(event).slice(0, 300))
+      return new Response('Missing event ID', { status: 400 })
+    }
 
     try {
       await db.$transaction(async (tx) => {
@@ -59,6 +63,13 @@ export async function POST(req: Request) {
           where: { relatedId: eventId, type: 'grant' },
         })
         if (exists) return // Already processed — skip silently
+
+        // Verify user exists (could have been deleted between checkout and webhook)
+        const user = await tx.user.findUnique({ where: { id: userId } })
+        if (!user) {
+          console.warn('Webhook for deleted user:', userId)
+          return // Skip gracefully, return 200 to stop retries
+        }
 
         // Grant credits + upgrade membership
         await tx.user.update({

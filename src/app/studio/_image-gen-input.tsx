@@ -1,13 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, Zap, Crown } from 'lucide-react'
 import { useDraft } from '@/hooks/use-draft'
 
 const STYLES = ['Realistic', 'Anime', '3D', 'Watercolor'] as const
 const RATIOS = ['1:1', '16:9', '9:16'] as const
 
-// Prompt quick templates — specific enough for beginners to get great results
+// Prompt quick templates
 const PROMPT_TEMPLATES = [
   { label: 'Product', prompt: 'A bottle of skincare serum on a white marble surface, scattered green leaves beside it, soft side natural light, clean minimal background, e-commerce hero image style' },
   { label: 'Food', prompt: 'A steaming bowl of beef noodle soup, golden chewy noodles, thick beef chunks, garnished with scallions and cilantro, dark wood table background, warm yellow lighting, top-down angle' },
@@ -15,8 +15,10 @@ const PROMPT_TEMPLATES = [
   { label: 'Poster', prompt: 'Summer sale promotional poster, deep red background with gold text, centered blank space for product, discount info section at bottom, clean and bold e-commerce style' },
 ]
 
+type Quality = 'fast' | 'pro'
+
 interface Props {
-  onGenerate: (data: { prompt: string; style: string; aspectRatio: string }) => void
+  onGenerate: (data: { prompt: string; style: string; aspectRatio: string; quality: Quality }) => void
   busy: boolean
   showToast: (msg: string, type?: 'error' | 'success') => void
 }
@@ -27,7 +29,10 @@ export function ImageGenInput({ onGenerate, busy, showToast }: Props) {
   const setPrompt = (v: string) => setDraft((d) => ({ ...d, prompt: v }))
   const [style, setStyle] = useState<string>('Realistic')
   const [ratio, setRatio] = useState<string>('1:1')
+  const [quality, setQuality] = useState<Quality>('fast')
   const [polishing, setPolishing] = useState(false)
+
+  const creditCost = quality === 'pro' ? 4 : 2
 
   async function handlePolish() {
     if (!prompt.trim()) return; setPolishing(true)
@@ -67,6 +72,41 @@ export function ImageGenInput({ onGenerate, busy, showToast }: Props) {
         </div>
       </div>
 
+      {/* Quality toggle */}
+      <div>
+        <p className="text-[10px] text-noir-500 mb-1.5">Quality</p>
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={() => setQuality('fast')}
+            className={`relative py-3 px-3 rounded-xl text-left transition-all ${
+              quality === 'fast'
+                ? 'bg-gradient-to-br from-gold-400/10 to-gold-400/[0.03] border border-gold-400/30 shadow-sm shadow-gold-400/5'
+                : 'bg-noir-800/30 border border-noir-700/20 hover:border-noir-600/40'
+            }`}>
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className={`w-5 h-5 rounded-md flex items-center justify-center ${quality === 'fast' ? 'bg-gold-400/15' : 'bg-noir-700/40'}`}>
+                <Zap className={`w-3 h-3 ${quality === 'fast' ? 'text-gold-400' : 'text-noir-500'}`} />
+              </div>
+              <span className={`text-xs font-medium ${quality === 'fast' ? 'text-gold-300' : 'text-noir-300'}`}>Fast</span>
+            </div>
+            <p className="text-[10px] text-noir-500 leading-snug">3 variants · 2 cr</p>
+          </button>
+          <button onClick={() => setQuality('pro')}
+            className={`relative py-3 px-3 rounded-xl text-left transition-all ${
+              quality === 'pro'
+                ? 'bg-gradient-to-br from-gold-400/10 to-gold-400/[0.03] border border-gold-400/30 shadow-sm shadow-gold-400/5'
+                : 'bg-noir-800/30 border border-noir-700/20 hover:border-noir-600/40'
+            }`}>
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className={`w-5 h-5 rounded-md flex items-center justify-center ${quality === 'pro' ? 'bg-gold-400/15' : 'bg-noir-700/40'}`}>
+                <Crown className={`w-3 h-3 ${quality === 'pro' ? 'text-gold-400' : 'text-noir-500'}`} />
+              </div>
+              <span className={`text-xs font-medium ${quality === 'pro' ? 'text-gold-300' : 'text-noir-300'}`}>Pro</span>
+            </div>
+            <p className="text-[10px] text-noir-500 leading-snug">HD quality · 4 cr</p>
+          </button>
+        </div>
+      </div>
+
       {/* Style selection */}
       <div>
         <p className="text-[10px] text-noir-500 mb-1.5">Style</p>
@@ -93,14 +133,11 @@ export function ImageGenInput({ onGenerate, busy, showToast }: Props) {
         </div>
       </div>
 
-      {/* Cost hint */}
-      <div className="text-xs text-noir-400">{style} · {ratio} · 2 credits</div>
-
       {/* Generate button */}
-      <button onClick={() => { if (!prompt.trim()) return showToast('Please enter an image prompt'); onGenerate({ prompt, style, aspectRatio: ratio }) }}
+      <button onClick={() => { if (!prompt.trim()) return showToast('Please enter an image prompt'); onGenerate({ prompt, style, aspectRatio: ratio, quality }) }}
         disabled={busy || !prompt.trim()}
         className="btn-shine w-full py-3 rounded-xl font-display text-base tracking-[0.15em] bg-gradient-to-r from-gold-400 to-gold-500 text-noir-900 font-medium hover:shadow-lg hover:shadow-gold-400/25 hover:-translate-y-0.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-        {busy ? <Loader2 className="w-5 h-5 animate-spin inline" /> : 'Generate Image'}
+        {busy ? <Loader2 className="w-5 h-5 animate-spin inline" /> : `Generate ${quality === 'fast' ? '3 Images' : 'HD Image'} · ${creditCost} credits`}
       </button>
     </div>
   )

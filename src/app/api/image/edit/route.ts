@@ -113,7 +113,9 @@ export async function POST(req: Request) {
       status: 'completed',
     })
   } catch {
-    await refundCredits(session.user.id, cost, 'generation_failed').catch(() => {})
+    await refundCredits(session.user.id, cost, 'generation_failed').catch((e) =>
+      console.error('Refund failed after image edit error (reconciliation needed):', e)
+    )
     return NextResponse.json({ error: 'Image editing failed, please try again' }, { status: 500 })
   }
 }

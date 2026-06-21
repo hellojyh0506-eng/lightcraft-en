@@ -85,7 +85,6 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: 'Unsupported duration' }, { status: 400 })
   }
-  const creditCost = dur.creditCost
 
   // 3.3 Pre-deduction guard: primary engine needs DASHSCOPE but not configured → fail-fast without deducting
   const primaryEngine = getEngine(mode.primary)
@@ -114,6 +113,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
   const membership = user.membership as PlanId
+
+  // Re-resolve duration with membership to get tier-specific credit cost
+  try {
+    dur = getModeDuration(modeId, durationSec, membership)
+  } catch {
+    return NextResponse.json({ error: 'Unsupported duration' }, { status: 400 })
+  }
+  const creditCost = dur.creditCost
+
   if (!dur.tierAccess.includes(membership)) {
     return NextResponse.json({ error: 'This quality tier/duration requires a membership upgrade', code: 'TIER_LOCKED' }, { status: 403 })
   }

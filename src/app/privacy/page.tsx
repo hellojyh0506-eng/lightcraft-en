@@ -19,7 +19,7 @@ export default function PrivacyPage() {
       <main className="max-w-3xl mx-auto px-6 py-16">
         <h1 className="font-display text-4xl font-light text-noir-50 tracking-wide mb-2">Privacy Policy</h1>
         <p className="font-body text-xs text-noir-400 mb-10">Effective date: June 15, 2026</p>
-        <p className="font-body text-sm text-noir-300 leading-relaxed mb-10">LightCraft (hereinafter referred to as "the Platform" or "we") understands the importance of personal information security. This Privacy Policy explains how we collect, use, store, share, and protect your personal information, as well as the rights you are entitled to.</p>
+        <p className="font-body text-sm text-noir-300 leading-relaxed mb-10">LightCraft (hereinafter referred to as &ldquo;the Platform&rdquo; or &ldquo;we&rdquo;) understands the importance of personal information security. This Privacy Policy explains how we collect, use, store, share, and protect your personal information, as well as the rights you are entitled to.</p>
         <div className="space-y-10 font-body text-sm text-noir-300 leading-relaxed">
           <section>
             <h2 className="font-display text-lg text-noir-100 mb-3">Chapter 1: Who We Are</h2>
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
             <p className="mb-3">4.1 To deliver the video generation feature, your uploaded images and prompts will be transmitted to:</p>
             <div className="mb-3 p-4 rounded-lg bg-noir-800/40 border border-noir-600/40">
               <p className="text-noir-200 font-medium mb-1">Alibaba Cloud Bailian (Alibaba Cloud Computing Co., Ltd.)</p>
-              <p className="text-noir-400 text-xs">Data transmitted: user-uploaded images and prompts · Purpose: AI video content generation · Data location: within the People's Republic of China · Alibaba Cloud holds Level 3 security certification</p>
+              <p className="text-noir-400 text-xs">Data transmitted: user-uploaded images and prompts · Purpose: AI video content generation · Data location: within the People&apos;s Republic of China · Alibaba Cloud holds Level 3 security certification</p>
             </div>
             <p className="mb-2">4.2 Other than the above, we will not share personal information with third parties unless we have your explicit consent or are required by law.</p>
             <p>4.3 Your data may be processed in different regions depending on the cloud infrastructure providers used. We take reasonable steps to ensure adequate protection of your data regardless of location.</p>

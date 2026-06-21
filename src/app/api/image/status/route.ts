@@ -3,13 +3,24 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { refundCredits } from '@/lib/credits'
 import { pollBgGen } from '@/lib/adapters/wanx-bg'
+import { createRateLimiter } from '@/lib/rate-limit'
+import { bodyTooLarge } from '@/lib/security'
 
 const STUCK_TIMEOUT_MS = 5 * 60 * 1000
+const limiter = createRateLimiter({ windowMs: 60_000, maxHits: 60 })
 
 export async function POST(req: Request) {
+  if (bodyTooLarge(req, 8_192)) {
+    return NextResponse.json({ error: 'Request body too large' }, { status: 413 })
+  }
+
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Please sign in first' }, { status: 401 })
+  }
+
+  if (limiter.check(session.user.id)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
   let body: { taskId?: string; generationId: string }

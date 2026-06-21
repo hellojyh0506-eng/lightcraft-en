@@ -5,6 +5,7 @@ import type { PlanId } from './plans'
 
 const ALL: PlanId[] = ['starter', 'trial', 'pro', 'max', 'ultra']
 const PRO_PLUS: PlanId[] = ['pro', 'max', 'ultra']
+const PRO_MAX: PlanId[] = ['pro', 'max']
 const ULTRA: PlanId[] = ['ultra']
 
 export type ModeId = 'standard' | 'voice' | 'premium' | 'transition'
@@ -43,7 +44,9 @@ export const MODES: Record<ModeId, CreativeMode> = {
     id: 'premium', displayName: 'Premium', capability: 'i2v',
     primary: 'bailian:i2v:1080p:silent', fallbacks: [],
     durations: [
+      { sec: 5, creditCost: 18, tierAccess: PRO_MAX },
       { sec: 5, creditCost: 14, tierAccess: ULTRA },
+      { sec: 10, creditCost: 30, tierAccess: PRO_MAX },
       { sec: 10, creditCost: 24, tierAccess: ULTRA },
       { sec: 15, creditCost: 28, tierAccess: ULTRA },
     ],
@@ -64,15 +67,20 @@ export function getMode(id: ModeId): CreativeMode {
   return m
 }
 
-export function getModeDuration(id: ModeId, sec: number): ModeDuration {
-  const d = getMode(id).durations.find((x) => x.sec === sec)
+export function getModeDuration(id: ModeId, sec: number, membership?: PlanId): ModeDuration {
+  const mode = getMode(id)
+  if (membership) {
+    const match = mode.durations.find((x) => x.sec === sec && x.tierAccess.includes(membership))
+    if (match) return match
+  }
+  const d = mode.durations.find((x) => x.sec === sec)
   if (!d) throw new Error(`Mode ${id} does not support ${sec}s`)
   return d
 }
 
 export function modeAllowed(id: ModeId, sec: number, membership: PlanId): boolean {
   try {
-    return getModeDuration(id, sec).tierAccess.includes(membership)
+    return getModeDuration(id, sec, membership).tierAccess.includes(membership)
   } catch {
     return false
   }

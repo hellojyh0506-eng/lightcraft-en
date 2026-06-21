@@ -20,7 +20,7 @@ class AccountLockedError extends CredentialsSignin {
   code = 'account_locked'
 }
 
-// Create user from Google OAuth — grant 7-day trial + 50 credits
+// Create user from Google OAuth — grant 7-day trial + 20 credits
 async function createGoogleUser(email: string, name?: string | null) {
   const trialEndsAt = new Date()
   trialEndsAt.setDate(trialEndsAt.getDate() + 7)
@@ -32,13 +32,13 @@ async function createGoogleUser(email: string, name?: string | null) {
         name: name || email.split('@')[0],
         emailVerified: true, // Google verifies email ownership
         membership: 'trial',
-        credits: 50,
+        credits: 20,
         trialEndsAt,
         consentAt: new Date(), // "Continue with Google" implies consent (standard OAuth pattern)
       },
     })
     await tx.creditTransaction.create({
-      data: { userId: u.id, amount: 50, type: 'grant', reason: 'trial_signup' },
+      data: { userId: u.id, amount: 20, type: 'grant', reason: 'trial_signup' },
     })
     await tx.membershipRecord.create({
       data: { userId: u.id, plan: 'trial', startAt: new Date(), endAt: trialEndsAt, status: 'active' },
@@ -47,7 +47,7 @@ async function createGoogleUser(email: string, name?: string | null) {
   })
 }
 
-// Create user from phone verification — grant 7-day trial + 50 credits (kept for existing phone users)
+// Create user from phone verification — grant 7-day trial + 20 credits (kept for existing phone users)
 async function createPhoneUser(phone: string, ip?: string) {
   const trialEndsAt = new Date()
   trialEndsAt.setDate(trialEndsAt.getDate() + 7)
@@ -59,14 +59,14 @@ async function createPhoneUser(phone: string, ip?: string) {
         name: `User${phone.slice(-4)}`,
         emailVerified: true,
         membership: 'trial',
-        credits: 50,
+        credits: 20,
         trialEndsAt,
         registerIp: ip,
         consentAt: new Date(),
       },
     })
     await tx.creditTransaction.create({
-      data: { userId: u.id, amount: 50, type: 'grant', reason: 'trial_signup' },
+      data: { userId: u.id, amount: 20, type: 'grant', reason: 'trial_signup' },
     })
     await tx.membershipRecord.create({
       data: { userId: u.id, plan: 'trial', startAt: new Date(), endAt: trialEndsAt, status: 'active' },
@@ -166,7 +166,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }) as any // Provider type widening for conditional push
+    }) as unknown as (typeof providers)[number] // Provider type widening for conditional push
   )
 }
 
@@ -189,9 +189,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         // Attach DB fields to user object so jwt callback can use them
         user.id = dbUser.id
-        ;(user as any).membership = dbUser.membership
-        ;(user as any).credits = dbUser.credits
-        ;(user as any).emailVerified = dbUser.emailVerified
+        ;(user as Record<string, unknown>).membership = dbUser.membership
+        ;(user as Record<string, unknown>).credits = dbUser.credits
+        ;(user as Record<string, unknown>).emailVerified = dbUser.emailVerified
       }
       return true
     },
@@ -200,11 +200,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        // @ts-expect-error membership/credits/emailVerified from custom User
+        // @ts-expect-error custom User fields not in default NextAuth type
         token.membership = user.membership
-        // @ts-expect-error
+        // @ts-expect-error custom User fields not in default NextAuth type
         token.credits = user.credits
-        // @ts-expect-error
+        // @ts-expect-error custom User fields not in default NextAuth type
         token.emailVerified = user.emailVerified
       }
       return token
@@ -214,11 +214,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
-        // @ts-expect-error
+        // @ts-expect-error custom session fields not in default NextAuth type
         session.user.membership = token.membership
-        // @ts-expect-error
+        // @ts-expect-error custom session fields not in default NextAuth type
         session.user.credits = token.credits
-        // @ts-expect-error
+        // @ts-expect-error custom session fields not in default NextAuth type
         session.user.emailVerified = token.emailVerified
       }
       return session

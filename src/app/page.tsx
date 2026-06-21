@@ -195,7 +195,7 @@ export default function HomePage() {
       <section className="py-32 sm:py-40 noise-overlay bg-aurora">
         <div className="relative z-10 max-w-3xl mx-auto px-6 text-center">
           <h2 className="font-display text-4xl sm:text-6xl font-light text-noir-50 tracking-wide leading-tight mb-8">
-            Your competitors' photos<br /><span className="text-gradient-gold">look more expensive. Why?</span>
+            Your competitors&apos; photos<br /><span className="text-gradient-gold">look more expensive. Why?</span>
           </h2>
           <p className="font-body text-noir-400 text-base mb-14 max-w-sm mx-auto leading-relaxed">
             50 free credits to get started. No install needed — works right in your browser.

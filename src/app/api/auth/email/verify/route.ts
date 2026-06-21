@@ -19,7 +19,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Please sign in first' }, { status: 401 })
   }
 
-  const body = await req.json()
+  let body
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request format' }, { status: 400 })
+  }
   const parsed = verifySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
@@ -39,7 +44,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid or expired verification code' }, { status: 400 })
   }
 
-  // Verification passed — grant 50 credits + activate 7-day Trial
+  // Verification passed — grant 20 credits + activate 7-day Trial
   // Use updateMany + WHERE emailVerified=false as atomic guard to prevent concurrent double-granting
   const trialEndsAt = new Date()
   trialEndsAt.setDate(trialEndsAt.getDate() + 7)
@@ -50,13 +55,13 @@ export async function POST(req: Request) {
       data: {
         emailVerified: true,
         membership: 'trial',
-        credits: { increment: 50 },
+        credits: { increment: 20 },
         trialEndsAt,
       },
     })
     if (updated.count === 0) return // Already verified by a concurrent request, skip
     await tx.creditTransaction.create({
-      data: { userId: user.id, amount: 50, type: 'grant', reason: 'trial_signup' },
+      data: { userId: user.id, amount: 20, type: 'grant', reason: 'trial_signup' },
     })
     await tx.membershipRecord.create({
       data: { userId: user.id, plan: 'trial', startAt: new Date(), endAt: trialEndsAt, status: 'active' },

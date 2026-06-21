@@ -18,7 +18,7 @@ export function useDraft(toolId: string) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(key)
-      if (raw) setDraft(JSON.parse(raw))
+      if (raw) requestAnimationFrame(() => setDraft(JSON.parse(raw)))
     } catch { localStorage.removeItem(key) }
     hydrated.current = true
   }, [key])

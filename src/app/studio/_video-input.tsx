@@ -6,13 +6,14 @@ import { compressImage, ImageError } from '@/lib/image'
 import { PRESETS } from '@/lib/presets'
 import { getModeDuration, MODES, type ModeId } from '@/lib/modes'
 import { SettingsPanel } from './_settings-panel'
+import { PresetPicker } from './_preset-picker'
 import { useDraft } from '@/hooks/use-draft'
 
 const EXAMPLES = [
-  { src: '/examples/ecommerce.jpg', label: 'Product', presetKey: 'ecommerce' },
-  { src: '/examples/food.jpg', label: 'Food', presetKey: 'food' },
-  { src: '/examples/fashion.jpg', label: 'Pet', presetKey: 'pet' },
-  { src: '/examples/storefront.jpg', label: 'Storefront', presetKey: 'storefront' },
+  { src: '/examples/ecommerce.jpg', label: 'Product', presetKey: 'ecom-showcase' },
+  { src: '/examples/food.jpg', label: 'Food', presetKey: 'food-sizzle' },
+  { src: '/examples/jewelry.jpg', label: 'Jewelry', presetKey: 'ecom-detail' },
+  { src: '/examples/storefront.jpg', label: 'Storefront', presetKey: 'realestate-walkthrough' },
 ]
 
 interface Props {
@@ -195,6 +196,9 @@ export function VideoInput({ onGenerate, busy, showToast }: Props) {
       )}
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0], 1)} />
 
+      {/* Template picker */}
+      <PresetPicker onSelect={(preset) => { setPrompt(preset.prompt); showToast(`"${preset.label}" template applied`, 'success') }} />
+
       {/* Prompt */}
       <div>
         <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={isTransition ? 'Describe the transition between two images...' : 'Describe the video effect you want...'}
@@ -217,6 +221,9 @@ export function VideoInput({ onGenerate, busy, showToast }: Props) {
         className="btn-shine w-full py-3 rounded-xl font-display text-base tracking-[0.15em] bg-gradient-to-r from-gold-400 to-gold-500 text-noir-900 font-medium hover:shadow-lg hover:shadow-gold-400/25 hover:-translate-y-0.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2">
         {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : costLabel}
       </button>
+      {!busy && hasEnoughImages && (
+        <p className="text-[10px] text-noir-600 text-center -mt-1">Usually takes 1–3 minutes</p>
+      )}
     </div>
   )
 }

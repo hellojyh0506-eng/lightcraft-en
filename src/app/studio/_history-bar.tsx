@@ -1,6 +1,6 @@
 'use client'
 
-import { Play } from 'lucide-react'
+import { Play, Images } from 'lucide-react'
 import type { Task } from '@/hooks/use-task-feed'
 
 interface Props {
@@ -27,8 +27,15 @@ export function HistoryBar({ tasks, onSelect }: Props) {
                   <Play className="absolute bottom-0.5 right-0.5 w-3 h-3 text-gold-400" />
                 </>
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={task.resultUrl} alt="" className="w-full h-full object-cover" />
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={task.resultUrl} alt="" className="w-full h-full object-cover" />
+                  {task.altUrls && task.altUrls.length > 1 && (
+                    <span className="absolute bottom-0.5 right-0.5 flex items-center gap-0.5 px-1 py-0.5 rounded bg-noir-950/70 text-[8px] text-gold-400">
+                      <Images className="w-2.5 h-2.5" />{task.altUrls.length}
+                    </span>
+                  )}
+                </>
               )}
             </div>
           ) : (

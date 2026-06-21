@@ -33,10 +33,11 @@ export function useCredits() {
 
   // 首次加载 + 切回标签页时自动刷新（覆盖支付后返回等场景）
   useEffect(() => {
-    load()
+    // Schedule initial load outside effect body to avoid synchronous setState
+    const id = requestAnimationFrame(() => load())
     const onVisible = () => { if (document.visibilityState === 'visible') load() }
     document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
+    return () => { cancelAnimationFrame(id); document.removeEventListener('visibilitychange', onVisible) }
   }, [load])
 
   const claim = useCallback(async () => {

@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Check, X, Crown, Loader2 } from 'lucide-react'
 import { PLANS } from '@/lib/plans'
 import { FAQSection } from '@/components/faq-section'
@@ -8,10 +10,24 @@ import { Footer } from '@/components/footer'
 import { Navbar } from '@/components/navbar'
 
 export default function PricingPage() {
+  const router = useRouter()
+  const { data: session } = useSession()
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [currentMembership, setCurrentMembership] = useState<string | null>(null)
 
-  async function handleChoosePlan(planId: string) {
+  // Fetch current membership for logged-in users
+  useEffect(() => {
+    if (!session?.user) return
+    const id = requestAnimationFrame(() => {
+      fetch('/api/credits').then(r => r.json()).then(data => {
+        if (data.membership) setCurrentMembership(data.membership)
+      }).catch(() => {})
+    })
+    return () => cancelAnimationFrame(id)
+  }, [session])
+
+  const handleChoosePlan = useCallback(async (planId: string) => {
     setError('')
     setLoadingPlan(planId)
     try {
@@ -22,7 +38,7 @@ export default function PricingPage() {
       })
       if (res.status === 401) {
         // Not logged in — redirect to login first
-        window.location.href = '/login'
+        router.push('/login')
         return
       }
       const data = await res.json()
@@ -31,13 +47,13 @@ export default function PricingPage() {
         return
       }
       // Redirect to Creem hosted checkout
-      window.location.href = data.checkoutUrl
+      window.location.assign(data.checkoutUrl)
     } catch {
       setError('Payment service unavailable. Please try again.')
     } finally {
       setLoadingPlan(null)
     }
-  }
+  }, [router])
 
   return (
     <div className="min-h-screen bg-noir-900">
@@ -91,14 +107,18 @@ export default function PricingPage() {
               {/* CTA button */}
               <button
                 onClick={() => handleChoosePlan(plan.id)}
-                disabled={loadingPlan !== null}
+                disabled={loadingPlan !== null || currentMembership === plan.id}
                 className={`w-full py-3 rounded-xl font-body font-medium transition-all duration-300 mb-7 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  plan.recommended
-                    ? 'bg-gradient-to-r from-gold-400 to-gold-500 text-noir-900 hover:shadow-lg hover:shadow-gold-400/30 hover:-translate-y-0.5'
-                    : 'bg-noir-700/60 text-noir-100 border border-gold-400/20 hover:border-gold-400/50'
+                  currentMembership === plan.id
+                    ? 'bg-noir-700/40 text-noir-300 border border-sage-400/30'
+                    : plan.recommended
+                      ? 'bg-gradient-to-r from-gold-400 to-gold-500 text-noir-900 hover:shadow-lg hover:shadow-gold-400/30 hover:-translate-y-0.5'
+                      : 'bg-noir-700/60 text-noir-100 border border-gold-400/20 hover:border-gold-400/50'
                 }`}>
                 {loadingPlan === plan.id ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /><span>Processing...</span></>
+                ) : currentMembership === plan.id ? (
+                  <><Check className="w-4 h-4 text-sage-400" /><span>Current Plan</span></>
                 ) : (
                   `Choose ${plan.name}`
                 )}

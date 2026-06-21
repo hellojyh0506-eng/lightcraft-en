@@ -1,14 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2, Download, Clock, ArrowRight, Paintbrush, Type, Play, X } from 'lucide-react'
+import { Loader2, Download, Clock, ArrowRight, Paintbrush, Type, Play, Link, X } from 'lucide-react'
 import { BeforeAfterSlider } from '@/components/before-after-slider'
+import { ExportPanel } from './_export-panel'
+import { TextOverlayEditor } from './_text-overlay-editor'
+import { VoiceoverEditor } from './_voiceover-editor'
+import type { TextOverlay } from '@/lib/text-overlay'
+import type { Voiceover } from '@/lib/voiceover'
 import type { Phase } from '@/hooks/use-generation'
 import type { Task } from '@/hooks/use-task-feed'
 import type { ToolId } from './_tool-tabs'
+import type { PlanId } from '@/lib/plans'
 
 interface Props {
-  result: { id?: string; url: string; type: 'image' | 'video'; prompt: string } | null
+  result: { id?: string; url: string; altUrls?: string[]; type: 'image' | 'video'; prompt: string } | null
   beforeImage: string | null
   syncBusy: boolean
   genPhase: Phase
@@ -16,6 +22,8 @@ interface Props {
   recentTasks: Task[]
   onTaskSelect: (task: Task) => void
   activeTool: ToolId
+  membership?: PlanId
+  showToast: (msg: string, type?: 'error' | 'success') => void
 }
 
 function fmtTime(s: number) { return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}` }
@@ -26,7 +34,7 @@ const EMPTY_STATES: Record<ToolId, { icon: typeof Paintbrush; title: string; des
     icon: Paintbrush,
     title: 'Upload an image, AI edits it for you',
     desc: 'Upload on the left, see results on the right',
-    features: ['Background swap', 'Cutout', 'Remove watermark', 'Enhance', 'Custom edit'],
+    features: ['Background swap', 'Remove background', 'Erase watermark', 'Enhance', 'Custom edit'],
   },
   generate: {
     icon: Type,
@@ -40,12 +48,28 @@ const EMPTY_STATES: Record<ToolId, { icon: typeof Paintbrush; title: string; des
     desc: 'Upload a still image, AI brings it to life',
     features: ['5-15 sec clips', 'Perfect for social media', 'Multiple camera modes'],
   },
+  link: {
+    icon: Link,
+    title: 'Paste a link, get a video',
+    desc: 'Turn any product listing into a video ad',
+    features: ['Etsy', 'Shopify', 'Amazon', 'Auto-extract product data'],
+  },
 }
 
-export function ResultPanel({ result, beforeImage, syncBusy, genPhase, genElapsed, recentTasks, onTaskSelect, activeTool }: Props) {
+export function ResultPanel({ result, beforeImage, syncBusy, genPhase, genElapsed, recentTasks, onTaskSelect, activeTool, membership, showToast }: Props) {
   const [lightbox, setLightbox] = useState(false)
+  const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(null)
+  const [voiceover, setVoiceover] = useState<Voiceover | null>(null)
+  const [selectedAlt, setSelectedAlt] = useState<string | null>(null) // 用户从多图中选中的
   const isGenerating = syncBusy || (genPhase !== 'idle' && genPhase !== 'timeout')
   const completedTasks = recentTasks.filter((t) => t.status === 'completed' && t.resultUrl)
+
+  // 当 result 变化时重置选择
+  const displayUrl = selectedAlt && result?.altUrls?.includes(selectedAlt) ? selectedAlt : result?.url || ''
+  if (result?.url && selectedAlt && !result.altUrls?.includes(selectedAlt)) {
+    // result changed, reset selection
+    requestAnimationFrame(() => setSelectedAlt(null))
+  }
 
   // ESC to close lightbox
   useEffect(() => {
@@ -130,8 +154,8 @@ export function ResultPanel({ result, beforeImage, syncBusy, genPhase, genElapse
     )
   }
 
-  // Generating
-  if (isGenerating) {
+  // Generating — show loading only when no partial result available yet
+  if (isGenerating && !result) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center p-8 relative">
         {/* Sync operations (edit/generate) with source image: show image + translucent overlay */}
@@ -156,29 +180,109 @@ export function ResultPanel({ result, beforeImage, syncBusy, genPhase, genElapse
 
   // Has result
   return (
-    <div className="h-full flex flex-col p-4">
-      <div className="flex-1 min-h-0 flex items-center justify-center rounded-xl overflow-hidden bg-noir-900/50 border border-noir-800/40">
+    <div className="h-full flex flex-col p-4 overflow-y-auto">
+      <div className="shrink-0 min-h-[200px] max-h-[60%] flex items-center justify-center rounded-xl overflow-hidden bg-noir-900/50 border border-noir-800/40 relative">
         {beforeImage && result ? (
           <BeforeAfterSlider beforeSrc={beforeImage} afterSrc={result.url} className="w-full h-full" />
         ) : result?.type === 'video' ? (
-          <video src={result.url} controls autoPlay loop muted playsInline className="max-w-full max-h-full object-contain" />
+          <>
+            <video src={result.url} controls autoPlay loop muted playsInline className="max-w-full max-h-full object-contain" />
+            {/* 文字叠加实时预览层 */}
+            {textOverlay?.text && (
+              <div className="absolute inset-0 pointer-events-none flex" style={{
+                alignItems: textOverlay.position === 'top' ? 'flex-start' : textOverlay.position === 'center' ? 'center' : 'flex-end',
+                justifyContent: 'center',
+                padding: '12px',
+              }}>
+                <span
+                  className="px-4 py-2 rounded-lg text-center max-w-[90%] leading-snug"
+                  style={{
+                    fontFamily: textOverlay.fontFamily,
+                    fontSize: `${Math.max(14, textOverlay.fontSize * 0.55)}px`,
+                    color: textOverlay.color,
+                    backgroundColor: textOverlay.bgColor,
+                  }}
+                >
+                  {textOverlay.text}
+                </span>
+              </div>
+            )}
+          </>
         ) : result ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={result.url} alt="" className="max-w-full max-h-full object-contain cursor-zoom-in" onClick={() => setLightbox(true)} />
+          <img src={displayUrl} alt="" className="max-w-full max-h-full object-contain cursor-zoom-in" onClick={() => setLightbox(true)} />
         ) : null}
       </div>
 
+      {/* Multi-image selection grid — when API returns multiple options */}
+      {result?.altUrls && result.altUrls.length >= 1 && (
+        <div className="mt-2">
+          <p className="text-[10px] text-noir-500 mb-1.5">
+            {syncBusy ? `Generating... ${result.altUrls.length}/3` : 'Pick your favorite'}
+          </p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {result.altUrls.map((url, i) => (
+              <button key={i} onClick={() => setSelectedAlt(url)}
+                className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                  displayUrl === url
+                    ? 'border-gold-400 shadow-lg shadow-gold-400/20'
+                    : 'border-noir-700/40 hover:border-gold-400/40'
+                }`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={`Option ${i + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+            {/* Loading placeholders for images still generating */}
+            {syncBusy && Array.from({ length: 3 - result.altUrls.length }).map((_, i) => (
+              <div key={`placeholder-${i}`} className="aspect-square rounded-lg border-2 border-dashed border-noir-700/30 flex items-center justify-center bg-noir-800/20">
+                <Loader2 className="w-4 h-4 text-gold-400/40 animate-spin" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Text overlay editor */}
+      {result?.type === 'video' && (
+        <div className="mt-2">
+          <TextOverlayEditor overlay={textOverlay} onChange={setTextOverlay} />
+        </div>
+      )}
+
+      {result?.type === 'video' && (
+        <div className="mt-2">
+          <VoiceoverEditor voiceover={voiceover} onChange={setVoiceover} showToast={showToast} />
+        </div>
+      )}
+
       {result && (
-        <div className="mt-3 flex items-center justify-between">
-          <p className="font-body text-xs text-noir-500 truncate max-w-[60%]">{result.prompt}</p>
-          {result.id ? (
-            <a href={`/api/${result.type === 'video' ? 'video' : 'image'}/download?id=${result.id}`} download className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gold-400 text-noir-950 text-sm font-medium hover:bg-gold-300 transition-colors">
-              <Download className="w-3.5 h-3.5" /> Download
-            </a>
-          ) : (
-            <a href={result.url} target="_blank" rel="noopener" className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gold-400 text-noir-950 text-sm font-medium hover:bg-gold-300 transition-colors">
-              <Download className="w-3.5 h-3.5" /> Download
-            </a>
+        <div className="mt-2 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="font-body text-xs text-noir-500 truncate max-w-[60%]">{result.prompt}</p>
+            {result.type === 'video' && result.id ? (
+              <a href={`/api/video/download?id=${result.id}`} download className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gold-400 text-noir-950 text-sm font-medium hover:bg-gold-300 transition-colors">
+                <Download className="w-3.5 h-3.5" /> Download
+              </a>
+            ) : (
+              <button onClick={async () => {
+                try {
+                  const res = await fetch(displayUrl)
+                  const blob = await res.blob()
+                  const a = document.createElement('a')
+                  a.href = URL.createObjectURL(blob)
+                  a.download = `lightcraft_${result.id || 'image'}.${blob.type.includes('png') ? 'png' : 'jpg'}`
+                  a.click()
+                  URL.revokeObjectURL(a.href)
+                } catch { showToast('Download failed — try right-clicking the image and "Save Image As"') }
+              }} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gold-400 text-noir-950 text-sm font-medium hover:bg-gold-300 transition-colors">
+                <Download className="w-3.5 h-3.5" /> Download
+              </button>
+            )}
+          </div>
+
+          {/* 多平台导出 — 仅视频结果显示 */}
+          {result.type === 'video' && (
+            <ExportPanel videoUrl={result.url} videoId={result.id} textOverlay={textOverlay} voiceover={voiceover} membership={membership} />
           )}
         </div>
       )}
@@ -190,7 +294,7 @@ export function ResultPanel({ result, beforeImage, syncBusy, genPhase, genElapse
             <X className="w-5 h-5" />
           </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={result.url} alt="" className="max-w-[95vw] max-h-[90vh] object-contain rounded-xl" onClick={(e) => e.stopPropagation()} />
+          <img src={displayUrl} alt="" className="max-w-[95vw] max-h-[90vh] object-contain rounded-xl" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
     </div>

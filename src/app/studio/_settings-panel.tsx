@@ -15,7 +15,7 @@ const MODE_LIST = (Object.values(MODES) as { id: ModeId; displayName: string }[]
 const MODE_MIN_TIER: Record<ModeId, PlanId> = {
   standard: 'starter',
   voice: 'pro',
-  premium: 'ultra',
+  premium: 'pro',
   transition: 'pro',
 }
 
@@ -35,7 +35,10 @@ interface Props {
 export function SettingsPanel({ mode, duration, onModeChange, onDurationChange, membership }: Props) {
   // Get available durations from current mode config (H2 fix: no longer hardcoding [5,10,15])
   const modeConfig = MODES[mode as ModeId]
-  const availableDurations = modeConfig?.durations.map((d) => d.sec) ?? [5, 10]
+  const allDurations = modeConfig?.durations ?? []
+  const availableDurations = membership
+    ? [...new Set(allDurations.filter((d) => d.tierAccess.includes(membership)).map((d) => d.sec))]
+    : [...new Set(allDurations.map((d) => d.sec))]
 
   return (
     <div className="space-y-3 p-3 rounded-xl bg-noir-800/60 border border-noir-600/30 animate-fade-in">

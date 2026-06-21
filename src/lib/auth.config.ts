@@ -24,7 +24,7 @@ export const authConfig = {
         nextUrl.pathname.startsWith('/register')
       const isVerifyPage = nextUrl.pathname.startsWith('/verify-email')
 
-      // @ts-expect-error emailVerified from custom JWT
+      // @ts-expect-error emailVerified not in default NextAuth User type
       const emailVerified = auth?.user?.emailVerified ?? true
 
       // Not logged in on protected page → redirect to login
@@ -48,11 +48,11 @@ export const authConfig = {
     jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        // @ts-expect-error membership/credits/emailVerified from custom User
+        // @ts-expect-error membership/credits/emailVerified not in default NextAuth User type
         token.membership = user.membership
-        // @ts-expect-error
+        // @ts-expect-error custom User fields not in default type
         token.credits = user.credits
-        // @ts-expect-error
+        // @ts-expect-error custom User fields not in default type
         token.emailVerified = user.emailVerified
       }
       return token
@@ -60,11 +60,11 @@ export const authConfig = {
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
-        // @ts-expect-error
+        // @ts-expect-error custom session fields not in default NextAuth types
         session.user.membership = token.membership
-        // @ts-expect-error
+        // @ts-expect-error custom session fields not in default NextAuth types
         session.user.credits = token.credits
-        // @ts-expect-error
+        // @ts-expect-error custom session fields not in default NextAuth types
         session.user.emailVerified = token.emailVerified
       }
       return session

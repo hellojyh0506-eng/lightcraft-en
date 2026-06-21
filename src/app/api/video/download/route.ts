@@ -45,7 +45,15 @@ export async function GET(req: NextRequest) {
   }
 
   // Server-side fetch of upstream video (SSRF protection: restrict upstream domains)
-  const ALLOWED_DOMAINS = ['dashscope.aliyuncs.com', 'cn-beijing.oss.aliyuncs.com', 'cdn.siliconflow.cn', 'sf-maas-uat-prod.oss-cn-shanghai.aliyuncs.com']
+  const ALLOWED_DOMAINS = [
+    'dashscope.aliyuncs.com', 'cn-beijing.oss.aliyuncs.com',
+    'cdn.siliconflow.cn', 's3.siliconflow.cn',
+    'sf-maas-uat-prod.oss-cn-shanghai.aliyuncs.com',
+    'image.siliconflow.cn', 'siliconflow.cn',
+    'oss-cn-shanghai.aliyuncs.com', 'oss-cn-beijing.aliyuncs.com',
+    'oss-cn-hangzhou.aliyuncs.com', 'oss-cn-shenzhen.aliyuncs.com',
+    'oss-us-west-1.aliyuncs.com',
+  ]
   try {
     const urlHost = new URL(gen.videoUrl).hostname
     if (!ALLOWED_DOMAINS.some((d) => urlHost === d || urlHost.endsWith('.' + d))) {
@@ -64,7 +72,7 @@ export async function GET(req: NextRequest) {
   return new Response(upstream.body, {
     headers: {
       'Content-Type': upstream.headers.get('content-type') || 'video/mp4',
-      'Content-Disposition': `attachment; filename="lumiere_${id}.mp4"`,
+      'Content-Disposition': `attachment; filename="lightcraft_${id}.mp4"`,
       'Cache-Control': 'private, no-store',
     },
   })

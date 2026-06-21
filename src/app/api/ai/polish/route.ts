@@ -21,6 +21,11 @@ function withinPolishLimit(userId: string): boolean {
 }
 
 export async function POST(req: Request) {
+  // Body size check first — prevent oversized payloads from consuming rate limit quota
+  if (bodyTooLarge(req, 8_192)) {
+    return NextResponse.json({ error: 'Request body too large' }, { status: 413 })
+  }
+
   // AI polish is free (conversion assist), only requires sign-in + rate limiting
   const session = await auth()
   if (!session?.user?.id) {
@@ -30,9 +35,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Daily polish limit reached, please try again tomorrow', code: 'RATE_LIMITED' }, { status: 429 })
   }
 
-  if (bodyTooLarge(req, 8_192)) {
-    return NextResponse.json({ error: 'Request body too large' }, { status: 413 })
-  }
   let body
   try {
     body = await req.json()
